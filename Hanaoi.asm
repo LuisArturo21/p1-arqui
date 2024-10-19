@@ -52,11 +52,42 @@
             addi t0 , zero , 1 # Valor comparativo
             beq a0 , t0 , hanoi_base
             jal ra , hanoi_rec_1 # Primera llamada recursiva con parámetros establecidos en función
-            jal ra , hanoi_get_original_values # Recobrar posiciones originales de registros apuntadores a torres
-            jal ra , hanoi_move_disk # Mover disco conforme a primera llamada recursiva
+            jal ra , hanoi_values # Recobrar posiciones originales de registros apuntadores a torres
+            jal ra , hanoi_disks # Mover disco conforme a primera llamada recursiva
             jal ra , hanoi_rec_2 # Segunda llamada recursiva con parámetros establecidos en función
-            jal zero , hanoi_ret # Representación final de cambios en las torres y limpieza del stack frame
+            jal zero , hanoi_res # Representación final de cambios en las torres y limpieza del stack frame
 
         hanoi_base: # Un disco
-            jal ra , hanoi_move_disk # Mover disco a destino
-            jal zero , hanoi_ret # Representar movimiento y limpiar stack
+            jal ra , hanoi_disks # Mover disco a destino
+            jal zero , hanoi_res # Representar movimiento y limpiar stack
+        
+
+        hanoi_values: # Funcion que recupera los valores
+            lw a0 , 4(sp) # N
+            lw a1 , 8(sp) # Original
+            lw a2 , 12(sp) # Auxiliar
+            lw a3 , 16(sp) # Destino
+            jalr zero , ra , 0 # Return
+        
+        hanoi_rec_1:
+            addi a0 , a0 , -1 # Reduccion de N
+            # Cambiamos las direcciones de destino con auxiliar
+            add t0 , zero , a2 # Auxiliar
+            add a2 , zero , a3 # Auxiliar ahora apunta a la torre destino
+            add a3 , zero , t0 # Destino ahora apunta a la torre auxiliar
+            jal zero , hanoi
+
+        hanoi_rec_2:
+            addi a0 , a0 , -1 # Reduccion de N
+            # Cambiamos las direcciones de destino con auxiliar
+            add t0 , zero , a1 # Origen
+            add a1 , zero , a2 # Auxiliar apunta a origen
+            add a2 , zero , t0 # Origen apunta a auxiliar
+            jal zero , hanoi
+
+        hanoi_res:
+            jal ra , hanoi_values # Restablecemos los resgistros
+            lw ra , 0(sp) # Restauramos ra
+            addi sp , sp , 20 # Limpiamos el stack
+            jalr zero , ra 0 # Return
+
