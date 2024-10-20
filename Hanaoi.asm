@@ -35,10 +35,10 @@ main:
     add a2, zero, s2 # Torre auxiliar
     add a3, zero, s3 # Torre destino
 
-    jal ra, hanoi_towers # Iniciar proceso de torres de hanoi
+    jal ra, hanoi # Iniciar proceso de torres de hanoi
     jal zero, exit # Terminar programa         
     
-hanoi_towers:
+hanoi:
     # Reservar espacio en el stack
     addi sp, sp, -20 # 5*4 = 20
     sw ra, 0(sp)  # Guardar retorno
@@ -47,20 +47,20 @@ hanoi_towers:
     sw a2, 12(sp) # Guardar torre auxiliar
     sw a3, 16(sp) # Guardar torre destino
     
-    # Llamadas principales de hanoi_towers
+    # Llamadas principales de hanoi
     addi t0, zero, 1 # Valor para base
     beq a0, t0, hanoi_base # Si N es 1, ir a hanoi_base
     jal ra, hanoi_rec_1 # Llamada recursiva 1
-    jal ra, hanoi_get_original_values # Recuperar registros originales
+    jal ra, hanoi_values # Recuperar registros originales
     jal ra, hanoi_move_disk # Mover disco
     jal ra, hanoi_rec_2 # Llamada recursiva 2
-    jal zero, hanoi_ret # Terminar y limpiar stack
+    jal zero, hanoi_res # Terminar y limpiar stack
     
 hanoi_base: # Caso base: un disco
     jal ra, hanoi_move_disk # Mover disco a destino
-    jal zero, hanoi_ret # Terminar y limpiar stack
+    jal zero, hanoi_res # Terminar y limpiar stack
     
-hanoi_get_original_values: # Recuperar valores originales
+hanoi_values: # Recuperar valores originales
     lw a0, 4(sp)    # Cargar N
     lw a1, 8(sp)    # Cargar torre origen
     lw a2, 12(sp)   # Cargar torre auxiliar
@@ -73,7 +73,7 @@ hanoi_rec_1: # hanoi(n - 1, origen, destino, auxiliar)
     add t0, zero, a2 # Guardar auxiliar
     add a2, zero, a3 # Auxiliar ahora es destino
     add a3, zero, t0 # Destino ahora es auxiliar
-    jal zero, hanoi_towers # Llamada recursiva
+    jal zero, hanoi # Llamada recursiva
 
 hanoi_rec_2: # hanoi(n - 1, auxiliar, origen, destino)
     addi a0, a0, -1 # Reducir N
@@ -81,10 +81,10 @@ hanoi_rec_2: # hanoi(n - 1, auxiliar, origen, destino)
     add t0, zero, a1 # Guardar origen
     add a1, zero, a2 # Origen ahora es auxiliar
     add a2, zero, t0 # Auxiliar ahora es origen
-    jal zero, hanoi_towers # Llamada recursiva
+    jal zero, hanoi # Llamada recursiva
 
-hanoi_ret:
-    jal ra, hanoi_get_original_values # Restaurar registros
+hanoi_res:
+    jal ra, hanoi_values # Restaurar registros
     lw ra, 0(sp) # Recuperar retorno
     addi sp, sp, 20 # Limpiar stack
     jalr zero, ra, 0 # Volver a la llamada
